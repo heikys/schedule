@@ -1,0 +1,108 @@
+<div class="min-h-screen bg-gray-50 p-8">
+
+  <!-- Header -->
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Gestión de Cursos</h1>
+    <p class="text-gray-600 mt-1">Añade, edita y gestiona los cursos de tu colegio.</p>
+  </header>
+
+  <!-- Formulario de añadir curso -->
+  <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-xl font-semibold mb-4">Añadir nuevo curso</h2>
+
+    <form phx-submit="add_course" phx-change="validate_course" class="flex flex-wrap gap-4 items-end">
+
+      <!-- Nombre del curso -->
+      <div class="flex-1 flex flex-col">
+        <label class="text-sm font-semibold mb-1">Curso</label>
+        <input
+          type="text"
+          name="course[name]"
+          placeholder="Nombre del curso"
+          value={Ecto.Changeset.get_field(@changeset, :name, "")}
+          class="border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-primary focus:outline-none"
+        />
+      </div>
+
+      <!-- Días lectivos -->
+      <div class="w-20 flex flex-col">
+        <label class="text-sm font-semibold mb-1 text-center">Días</label>
+        <input
+          type="number"
+          min="1"
+          max="7"
+          name="course[days]"
+          value={Ecto.Changeset.get_field(@changeset, :days, 5)}
+          class="border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
+        />
+      </div>
+
+      <!-- Slots por día -->
+      <div class="w-20 flex flex-col">
+        <label class="text-sm font-semibold mb-1 text-center">Slots</label>
+        <input
+          type="number"
+          min="1"
+          max="10"
+          name="course[slots_per_day]"
+          value={Ecto.Changeset.get_field(@changeset, :slots_per_day, 7)}
+          class="border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
+        />
+      </div>
+
+      <!-- Botón añadir -->
+      <div>
+        <button
+          type="submit"
+          class="bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark disabled:opacity-50 focus:outline-none transition-colors"
+          disabled={!@changeset.valid?}
+        >
+          Añadir
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+  <!-- Lista de cursos -->
+  <section class="bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold mb-4">Cursos existentes</h2>
+
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="px-4 py-2 border-b">Curso</th>
+          <th class="px-4 py-2 border-b">Días</th>
+          <th class="px-4 py-2 border-b">Slots</th>
+          <th class="px-4 py-2 border-b">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for course <- @courses do %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border-b"><%= course.name %></td>
+            <td class="px-4 py-2 border-b text-center"><%= course.days %></td>
+            <td class="px-4 py-2 border-b text-center"><%= course.slots_per_day %></td>
+            <td class="px-4 py-2 border-b flex gap-2">
+              <button
+                phx-click="edit_course"
+                phx-value-id={course.id}
+                class="bg-secondary text-white px-3 py-1 rounded hover:opacity-80 focus:outline-none transition-colors"
+              >
+                Editar
+              </button>
+              <button
+                phx-click="delete_course"
+                phx-value-id={course.id}
+                class="bg-red-500 text-white px-3 py-1 rounded hover:opacity-80 focus:outline-none transition-colors"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+</div>
