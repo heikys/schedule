@@ -70,12 +70,12 @@
                 />
               </div>
               <.button
-                class="grow-0"
+                class="px-6 py-2 rounded transition-colors bg-secondary text-white hover:bg-primary-dark"
                 type="button"
                 phx-click="delete_group"
                 phx-value-index={group.index}
               >
-                Delete
+                Borrar
               </.button>
             </div>
           </.inputs_for>
@@ -84,7 +84,7 @@
         <button
           type="button"
           phx-click="add_group"
-          class="mt-2 bg-secondary text-black px-4 py-2 rounded hover:bg-yellow-500"
+          class="mt-2 bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark focus:outline-none transition-colors"
         >
           + Añadir grupo
         </button>
@@ -119,6 +119,7 @@
           <th class="px-4 py-2 border-b">Curso</th>
           <th class="px-4 py-2 border-b">Días</th>
           <th class="px-4 py-2 border-b">Slots</th>
+          <th class="px-4 py-2 border-b">Grupos</th>
           <th class="px-4 py-2 border-b">Acciones</th>
         </tr>
       </thead>
@@ -128,6 +129,7 @@
             <td class="px-4 py-2 border-b">{course.name}</td>
             <td class="px-4 py-2 border-b text-center">{course.days}</td>
             <td class="px-4 py-2 border-b text-center">{course.slots_per_day}</td>
+            <td class="px-4 py-2 border-b">{Enum.map_join(course.groups, ", ", & &1.name)}</td>
             <td class="px-4 py-2 border-b flex gap-2">
               <button
                 phx-click="edit_course"
