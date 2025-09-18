@@ -19,6 +19,7 @@ defmodule Schedule.Repo.Schema.Course do
   def changeset(course, attrs) do
     course
     |> cast(attrs, [:name, :days, :slots_per_day])
+    |> cast_assoc(:groups, with: &Group.changeset/2)
     |> validate_required([:name, :days, :slots_per_day])
   end
 end

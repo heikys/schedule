@@ -1,70 +1,115 @@
 <div class="min-h-screen bg-gray-50 p-8">
-
-  <!-- Header -->
+  
+<!-- Header -->
   <header class="mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Gestión de Cursos</h1>
     <p class="text-gray-600 mt-1">Añade, edita y gestiona los cursos de tu colegio.</p>
   </header>
-
-  <!-- Formulario de añadir curso -->
+  
+<!-- Formulario de añadir curso -->
   <section class="bg-white p-6 rounded-lg shadow-md mb-8">
     <h2 class="text-xl font-semibold mb-4">Añadir nuevo curso</h2>
 
-    <form phx-submit="add_course" phx-change="validate_course" class="flex flex-wrap gap-4 items-end">
-
-      <!-- Nombre del curso -->
-      <div class="flex-1 flex flex-col">
-        <label class="text-sm font-semibold mb-1">Curso</label>
-        <input
-          type="text"
-          name="course[name]"
-          placeholder="Nombre del curso"
-          value={Ecto.Changeset.get_field(@changeset, :name, "")}
-          class="border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-primary focus:outline-none"
-        />
+    <.form
+      for={@form}
+      phx-submit="add_course"
+      phx-change="validate"
+      class="grid grid-cols-2 gap-x-8 gap-y-4"
+    >
+      <div class="flex flex-row gap-x-4">
+        <!-- Nombre del curso -->
+        <div class="basis-1/2">
+          <label class="w-full text-sm font-semibold mb-1">Curso</label>
+          <.input
+            field={@form[:name]}
+            name="course[name]"
+            placeholder="Nombre del curso"
+            class="w-full border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+        </div>
+        
+<!-- Días lectivos -->
+        <div class="basis-1/4">
+          <label class="w-full text-sm font-semibold mb-1 text-center">Días</label>
+          <.input
+            type="number"
+            field={@form[:days]}
+            class="w-full border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+        </div>
+        
+<!-- Slots por día -->
+        <div class="basis-1/4">
+          <label class="w-full text-sm font-semibold mb-1 text-center">Slots</label>
+          <.input
+            type="number"
+            field={@form[:slots_per_day]}
+            class="w-full border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+        </div>
       </div>
-
-      <!-- Días lectivos -->
-      <div class="w-20 flex flex-col">
-        <label class="text-sm font-semibold mb-1 text-center">Días</label>
-        <input
-          type="number"
-          min="1"
-          max="7"
-          name="course[days]"
-          value={Ecto.Changeset.get_field(@changeset, :days, 5)}
-          class="border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
-        />
-      </div>
-
-      <!-- Slots por día -->
-      <div class="w-20 flex flex-col">
-        <label class="text-sm font-semibold mb-1 text-center">Slots</label>
-        <input
-          type="number"
-          min="1"
-          max="10"
-          name="course[slots_per_day]"
-          value={Ecto.Changeset.get_field(@changeset, :slots_per_day, 7)}
-          class="border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
-        />
-      </div>
-
-      <!-- Botón añadir -->
+      
+<!-- Grupos dinámicos -->
       <div>
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Grupos</h2>
+        <p class="text-sm text-gray-500 mb-3">
+          Añade los grupos que pertenecen a este curso (por ejemplo: A, B, C, D).
+        </p>
+        <div class="space-y-2">
+          <.inputs_for :let={group} field={@form[:groups]}>
+            <input
+              type="hidden"
+              name={Phoenix.HTML.Form.input_name(group, :delete)}
+              value={to_string(Phoenix.HTML.Form.input_value(group, :delete))}
+            />
+            <div class="flex gap-4 items-end">
+              <div class="grow">
+                <.input
+                  class="border border-gray-300 rounded-md px-2 py-1 text-center focus:ring-2 focus:ring-primary focus:outline-none"
+                  field={group[:name]}
+                />
+              </div>
+              <.button
+                class="grow-0"
+                type="button"
+                phx-click="delete_group"
+                phx-value-index={group.index}
+              >
+                Delete
+              </.button>
+            </div>
+          </.inputs_for>
+        </div>
+
         <button
-          type="submit"
-          class="bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark disabled:opacity-50 focus:outline-none transition-colors"
-          disabled={!@changeset.valid?}
+          type="button"
+          phx-click="add_group"
+          class="mt-2 bg-secondary text-black px-4 py-2 rounded hover:bg-yellow-500"
         >
-          Añadir
+          + Añadir grupo
         </button>
       </div>
-
-    </form>
+      
+<!-- Botón final -->
+      <div class="pt-4">
+        <button
+          type="submit"
+          disabled={!@valid_form?}
+          class={[
+            "px-6 py-2 rounded transition-colors",
+            if(@valid_form?,
+              do: "bg-primary text-white hover:bg-primary-dark",
+              else: "bg-gray-300 text-gray-600 cursor-not-allowed"
+            )
+          ]}
+        >
+          Guardar
+        </button>
+      </div>
+    </.form>
   </section>
-
-  <!-- Lista de cursos -->
+  
+<!-- Lista de cursos -->
   <section class="bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-xl font-semibold mb-4">Cursos existentes</h2>
 
@@ -80,9 +125,9 @@
       <tbody>
         <%= for course <- @courses do %>
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-2 border-b"><%= course.name %></td>
-            <td class="px-4 py-2 border-b text-center"><%= course.days %></td>
-            <td class="px-4 py-2 border-b text-center"><%= course.slots_per_day %></td>
+            <td class="px-4 py-2 border-b">{course.name}</td>
+            <td class="px-4 py-2 border-b text-center">{course.days}</td>
+            <td class="px-4 py-2 border-b text-center">{course.slots_per_day}</td>
             <td class="px-4 py-2 border-b flex gap-2">
               <button
                 phx-click="edit_course"
@@ -104,5 +149,4 @@
       </tbody>
     </table>
   </section>
-
 </div>
