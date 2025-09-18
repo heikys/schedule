@@ -19,6 +19,7 @@ defmodule ScheduleWeb.Router do
 
     live "/", HomeLive, :index
     live "/courses/new", CourseFormLive
+    live "/subjects/new", SubjectFormLive
   end
 
   # Other scopes may use custom stacks.
