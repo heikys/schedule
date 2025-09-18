@@ -411,11 +411,16 @@ defmodule ScheduleWeb.CoreComponents do
       <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
   """
   attr :name, :string, required: true
-  attr :class, :string, default: "size-4"
+  attr :type, :string, default: "outline", values: ["outline", "solid", "mini"]
+  attr :class, :string, default: nil
 
-  def icon(%{name: "hero-" <> _} = assigns) do
+  def icon(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:name, fn -> String.replace(assigns.name, "hero-", "") end)
+
     ~H"""
-    <span class={[@name, @class]} />
+    {Heroicons.icon(assigns)}
     """
   end
 

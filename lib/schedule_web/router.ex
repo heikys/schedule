@@ -17,6 +17,7 @@ defmodule ScheduleWeb.Router do
   scope "/", ScheduleWeb do
     pipe_through :browser
 
+    live "/", HomeLive, :index
     live "/courses/new", CourseFormLive
   end
 
