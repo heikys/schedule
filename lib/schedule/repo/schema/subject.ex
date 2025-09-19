@@ -11,6 +11,7 @@ defmodule Schedule.Repo.Schema.Subject do
   import Ecto.Changeset
 
   schema "subjects" do
+    field :code, :string
     field :name, :string
     field :is_core, :boolean, default: true
     has_many :subject_teachers, SubjectTeacher
@@ -25,7 +26,8 @@ defmodule Schedule.Repo.Schema.Subject do
 
   def changeset(subject, attrs) do
     subject
-    |> cast(attrs, [:name, :is_core])
-    |> validate_required([:name])
+    |> cast(attrs, [:code, :name, :is_core])
+    |> validate_required([:name, :code])
+    |> unique_constraint(:code)
   end
 end

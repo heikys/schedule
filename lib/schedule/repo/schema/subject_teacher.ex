@@ -5,11 +5,9 @@ defmodule Schedule.Repo.Schema.SubjectTeacher do
   alias Schedule.Repo.Schema.Subject
   alias Schedule.Repo.Schema.Teacher
 
-  schema "subject_teachers" do
+  schema "subjects_teachers" do
     belongs_to :subject, Subject
     belongs_to :teacher, Teacher
-
-    timestamps()
   end
 
   def changeset(subject_teacher, attrs) do

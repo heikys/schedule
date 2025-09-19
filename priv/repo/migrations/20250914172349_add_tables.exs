@@ -25,16 +25,16 @@ defmodule Schedule.Repo.Migrations.AddTables do
 
     # Asignaturas
     create table(:subjects) do
+      add :code, :string
       add :name, :string, null: false
       add :is_core, :boolean, default: true
       timestamps()
     end
 
     # Relación asignaturas - profesores
-    create table(:subject_teachers) do
+    create table(:subjects_teachers) do
       add :subject_id, references(:subjects, on_delete: :delete_all), null: false
       add :teacher_id, references(:teachers, on_delete: :delete_all), null: false
-      timestamps()
     end
 
     # Horas por semana y bloques

@@ -2,12 +2,16 @@ defmodule ScheduleWeb.TeacherFormLive do
   use ScheduleWeb, :live_view
 
   alias Schedule.Repo
+  alias Schedule.Repo.Schema.Subject
   alias Schedule.Repo.Schema.Teacher
+
+  import Ecto.Query, only: [from: 2]
 
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
+       all_subjects: list_subjects(),
        teachers: list_teachers(),
        form: to_form(Teacher.changeset(%Teacher{}, %{})),
        valid_form?: false
@@ -16,11 +20,15 @@ defmodule ScheduleWeb.TeacherFormLive do
 
   @impl true
   def handle_event("validate", %{"teacher" => teacher_params}, socket) do
-    form =
-      %Teacher{}
-      |> Teacher.changeset(teacher_params)
+    changeset =
+      Teacher.changeset(%Teacher{}, teacher_params)
+      |> Ecto.Changeset.put_assoc(
+        :subjects,
+        preload_subjects(teacher_params["subject_ids"] || [])
+      )
       |> Map.put(:action, :validate)
-      |> to_form(as: "teacher")
+
+    form = to_form(changeset, as: "teacher")
 
     socket =
       socket
@@ -32,7 +40,15 @@ defmodule ScheduleWeb.TeacherFormLive do
 
   @impl true
   def handle_event("add_teacher", %{"teacher" => teacher_params}, socket) do
-    case Repo.insert(Teacher.changeset(%Teacher{}, teacher_params)) do
+    changeset =
+      %Teacher{}
+      |> Teacher.changeset(teacher_params)
+      |> Ecto.Changeset.put_assoc(
+        :subjects,
+        preload_subjects(teacher_params["subject_ids"] || [])
+      )
+
+    case Repo.insert(changeset) do
       {:ok, _teacher} ->
         {:noreply,
          socket
@@ -57,7 +73,21 @@ defmodule ScheduleWeb.TeacherFormLive do
      |> assign(teachers: list_teachers())}
   end
 
-  defp list_teachers do
-    Repo.all(Teacher)
+  defp list_teachers, do: Repo.all(Teacher) |> Repo.preload(:subjects)
+
+  defp list_subjects, do: Repo.all(Subject)
+
+  defp preload_subjects(nil), do: []
+
+  defp preload_subjects(subject_ids) do
+    subject_ids
+    |> Enum.reject(&(&1 == ""))
+    |> case do
+      [] ->
+        []
+
+      ids ->
+        Repo.all(from s in Subject, where: s.id in ^ids)
+    end
   end
 end

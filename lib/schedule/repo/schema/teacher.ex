@@ -3,7 +3,7 @@ defmodule Schedule.Repo.Schema.Teacher do
 
   alias Schedule.Repo.Schema.Assignment
   alias Schedule.Repo.Schema.GroupSubject
-  alias Schedule.Repo.Schema.SubjectTeacher
+  alias Schedule.Repo.Schema.Subject
   alias Schedule.Repo.Schema.TeacherAvailability
   alias Schedule.Repo.Schema.TeacherExtraHour
   alias Schedule.Repo.Schema.TeacherGroupSubjectAssignment
@@ -12,7 +12,8 @@ defmodule Schedule.Repo.Schema.Teacher do
 
   schema "teachers" do
     field :name, :string
-    has_many :subject_teachers, SubjectTeacher
+
+    many_to_many :subjects, Subject, join_through: "subjects_teachers"
     has_many :group_subjects, GroupSubject
     has_many :assignments, Assignment
     has_many :teacher_availability, TeacherAvailability
@@ -26,5 +27,6 @@ defmodule Schedule.Repo.Schema.Teacher do
     teacher
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> cast_assoc(:subjects)
   end
 end
