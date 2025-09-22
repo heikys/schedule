@@ -27,7 +27,7 @@ defmodule Schedule.Repo.Migrations.AddTables do
     create table(:subjects) do
       add :code, :string
       add :name, :string, null: false
-      add :is_core, :boolean, default: true
+      add :is_core, :boolean, default: false
       timestamps()
     end
 
@@ -103,6 +103,7 @@ defmodule Schedule.Repo.Migrations.AddTables do
 
     # Asignación manual de profesor a grupos para cada asignatura
     create table(:teacher_group_subject_assignment) do
+      add :is_tutor, :boolean, default: false
       add :teacher_id, references(:teachers, on_delete: :delete_all), null: false
       add :group_id, references(:groups, on_delete: :delete_all), null: false
       add :subject_id, references(:subjects, on_delete: :delete_all), null: false

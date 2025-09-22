@@ -32,25 +32,34 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Asignaturas que imparte
+          Asignaturas que imparte (sin contar las asignaturas de las que es tutor)
         </label>
-        <div
-          class="grid grid-cols-2 md:grid-cols-4 gap-4"
-          id="subjects-container"
-        >
-          <%= for subject <- @all_subjects do %>
-            <label class="flex items-center space-x-2" for={"subject_#{subject.id}"}>
-              <input
-                type="checkbox"
-                name="teacher[subject_ids][]"
-                value={subject.id}
-                id={"subject_#{subject.id}"}
-                checked={to_string(subject.id) in (@form[:subject_ids].value || [])}
-                class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+        <div class="space-y-4">
+          <% index = 0 %>
+          <%= for assignment_form <- Ecto.Changeset.get_field(@form.source, :assignments) do %>
+            <div class="max-w-sm">
+              <% assignment_id = "assignment_" <> to_string(index) %>
+              <.live_component
+                module={ScheduleWeb.Components.Typeahead}
+                field_name="subject_id"
+                id={assignment_id}
+                form={@assignment_form}
+                on_click={{:click_subject, assignment_id}}
+                on_search={{:search_subject, assignment_id}}
+                on_select={{:subject_selected, assignment_id}}
+                placeholder="Empieza a escribir para buscar..."
               />
-              <span>{subject.name}</span>
-            </label>
+              <% index = index + 1 %>
+            </div>
           <% end %>
+
+          <button
+            type="button"
+            phx-click="add-assignment"
+            class="text-sm font-medium text-primary hover:text-primary-dark"
+          >
+            + Añadir otra asignatura
+          </button>
         </div>
       </div>
       
