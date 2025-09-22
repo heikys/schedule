@@ -43,6 +43,7 @@
                 module={ScheduleWeb.Components.Typeahead}
                 field_name="subject_id"
                 id={assignment_id}
+                form={@assignment_form}
                 on_click={{:click_subject, assignment_id}}
                 on_search={{:search_subject, assignment_id}}
                 on_select={{:subject_selected, assignment_id}}

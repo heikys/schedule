@@ -14,8 +14,6 @@ defmodule ScheduleWeb.TeacherFormLive do
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
-       all_subjects: [],
-       #  all_subjects: list_subjects(),
        all_courses_with_groups: list_courses_with_groups(),
        teachers: list_teachers(),
        # Inicializamos con una asignación para que se muestre una fila
@@ -23,6 +21,8 @@ defmodule ScheduleWeb.TeacherFormLive do
          to_form(
            Teacher.changeset(%Teacher{}, %{assignments: [%TeacherGroupSubjectAssignment{}]})
          ),
+       assignment_form:
+         to_form(TeacherGroupSubjectAssignment.changeset(%TeacherGroupSubjectAssignment{}, %{})),
        valid_form?: false
      )}
   end
