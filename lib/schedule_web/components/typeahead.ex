@@ -7,6 +7,7 @@ defmodule ScheduleWeb.Components.Typeahead do
   def mount(socket) do
     socket =
       socket
+      |> assign(:selected_item, nil)
       |> assign(:items, [])
       |> assign(
         :form,
@@ -37,6 +38,9 @@ defmodule ScheduleWeb.Components.Typeahead do
       |> assign_new(:value, fn ->
         nil
       end)
+      |> assign_new(:selected_item, fn ->
+        nil
+      end)
       |> assign(:id, assigns.id)
       |> assign(:field_name, assigns.field_name)
       |> assign(:placeholder, assigns.placeholder)
@@ -65,10 +69,27 @@ defmodule ScheduleWeb.Components.Typeahead do
   end
 
   @impl true
-  def handle_event("select", %{"id" => id}, socket) do
-    send(self(), {socket.assigns.on_select, id})
+  def handle_event("select", %{"id" => item_id}, socket) do
+    selected_item =
+      Enum.find(socket.assigns.items, fn item ->
+        to_string(item.id) == item_id
+      end)
+
+    send(self(), {socket.assigns.on_select, item_id})
+
+    socket =
+      socket
+      |> assign(:selected_item, selected_item)
+      |> assign(:items, [])
+      |> assign(:value, nil)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear", _, socket) do
+    send(self(), {socket.assigns.on_select, ""})
+    {:noreply, assign(socket, selected_item: nil, value: nil)}
   end
 
   @doc """
@@ -92,35 +113,60 @@ defmodule ScheduleWeb.Components.Typeahead do
     field_name = String.to_atom(assigns.field_name)
 
     ~H"""
-    <div>
-      <div class="space-y-6">
-        <.input
-          field={@form[field_name]}
-          type="text"
-          placeholder={@placeholder}
-          phx-click="click"
-          phx-keyup="search"
-          phx-target={@myself}
-          phx-debounce="300"
-        />
-
-        <ul>
-          <li
-            :for={item <- @items}
-            tabindex="0"
-            class="border-b py-1 last:border-none dark:border-zinc-700 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300 focus:border-blue-500"
-            phx-click="select"
-            phx-value-id={item.id}
+    <div class="relative">
+      <%= if @selected_item do %>
+        <div class="flex items-center justify-between w-full border-gray-300 rounded-md shadow-sm bg-gray-100 px-3 py-2">
+          <span class="text-gray-800">{@selected_item.name}</span>
+          <button
+            type="button"
+            phx-click="clear"
             phx-target={@myself}
+            class="text-gray-500 hover:text-gray-700"
+            aria-label="Limpiar selección"
           >
-            {item.name}
-          </li>
-        </ul>
-
-        <div :if={@value && Enum.empty?(@items)}>
-          {gettext("No results")}
+            <.icon name="x-mark" class="w-4 h-4" />
+          </button>
+          <input
+            type="hidden"
+            name={Phoenix.HTML.Form.input_name(@form, field_name)}
+            value={@selected_item.id}
+          />
         </div>
-      </div>
+      <% else %>
+        <div class="space-y-2">
+          <.input
+            field={@form[field_name]}
+            type="text"
+            placeholder={@placeholder}
+            phx-click="click"
+            phx-keyup="search"
+            phx-target={@myself}
+            phx-debounce="300"
+            value={@value}
+            autocomplete="off"
+          />
+
+          <ul
+            :if={not Enum.empty?(@items)}
+            class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto"
+          >
+            <li
+              :for={item <- @items}
+              tabindex="0"
+              class="px-3 py-2 border-b last:border-none cursor-pointer hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+              phx-click="select"
+              phx-value-id={item.id}
+              phx-target={@myself}
+            >
+              {item.name}
+            </li>
+          </ul>
+
+          <div :if={@value && Enum.empty?(@items)} class="text-sm text-gray-500 px-3 py-2">
+            {gettext("No results")}
+          </div>
+        </div>
+      <% end %>
     </div>
     """
   end

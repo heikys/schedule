@@ -144,13 +144,21 @@ defmodule ScheduleWeb.TeacherFormLive do
   end
 
   @impl true
-  def handle_info({{:subject_selected, _assignment_id}, subject_id}, socket) do
-    selected_subject = Repo.get!(Subject, subject_id)
+  def handle_info({{:subject_selected, assignment_id}, subject_id}, socket) do
+    index =
+      assignment_id
+      |> String.split("_")
+      |> List.last()
+      |> String.to_integer()
 
-    IO.inspect(subject_id, label: "Selected subject ID")
+    form_source = socket.assigns.form.source
 
-    socket = assign(socket, selected_subject: selected_subject)
-    # {:noreply, push_patch(socket, to: ~p"/teachers/new")}
+    new_assignments =
+      Ecto.Changeset.get_field(form_source, :assignments)
+      |> List.replace_at(index, %{subject_id: subject_id})
+
+    new_changeset = Ecto.Changeset.put_change(form_source, :assignments, new_assignments)
+    socket = assign(socket, form: to_form(new_changeset))
     {:noreply, socket}
   end
 
