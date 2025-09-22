@@ -7,6 +7,7 @@ defmodule Schedule.Repo.Schema.TeacherGroupSubjectAssignment do
   alias Schedule.Repo.Schema.Teacher
 
   schema "teacher_group_subject_assignment" do
+    field :is_tutor, :boolean, default: false
     belongs_to :teacher, Teacher
     belongs_to :group, Group
     belongs_to :subject, Subject

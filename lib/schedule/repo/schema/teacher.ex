@@ -1,32 +1,50 @@
 defmodule Schedule.Repo.Schema.Teacher do
   use Ecto.Schema
-
-  alias Schedule.Repo.Schema.Assignment
-  alias Schedule.Repo.Schema.GroupSubject
-  alias Schedule.Repo.Schema.Subject
-  alias Schedule.Repo.Schema.TeacherAvailability
-  alias Schedule.Repo.Schema.TeacherExtraHour
-  alias Schedule.Repo.Schema.TeacherGroupSubjectAssignment
-
   import Ecto.Changeset
+
+  alias Schedule.Repo.Schema.TeacherGroupSubjectAssignment
 
   schema "teachers" do
     field :name, :string
 
-    many_to_many :subjects, Subject, join_through: "subjects_teachers"
-    has_many :group_subjects, GroupSubject
-    has_many :assignments, Assignment
-    has_many :teacher_availability, TeacherAvailability
-    has_many :teacher_group_subject_assignments, TeacherGroupSubjectAssignment
-    has_many :teacher_extra_hours, TeacherExtraHour
+    has_many :teacher_group_subject_assignments, TeacherGroupSubjectAssignment,
+      on_delete: :delete_all
+
+    has_many :subjects, through: [:teacher_group_subject_assignments, :subject]
+    has_many :groups, through: [:teacher_group_subject_assignments, :group]
+
+    # Campo virtual para el formulario
+    field :assignments, {:array, :map}, virtual: true, default: []
 
     timestamps()
   end
 
   def changeset(teacher, attrs) do
     teacher
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :assignments])
     |> validate_required([:name])
-    |> cast_assoc(:subjects)
+    |> process_assignments()
+  end
+
+  defp process_assignments(changeset) do
+    case get_field(changeset, :assignments) do
+      nil ->
+        changeset
+
+      assignments ->
+        # Transformamos la estructura del formulario en los changesets que Ecto espera
+        tgsa_changesets =
+          for %{"subject_id" => subject_id, "group_ids" => group_ids} <- assignments,
+              subject_id != "" and not is_nil(subject_id),
+              group_id <- group_ids do
+            %TeacherGroupSubjectAssignment{
+              subject_id: subject_id,
+              group_id: group_id
+            }
+          end
+
+        # Usamos put_assoc para que Ecto gestione las inserciones/borrados
+        put_assoc(changeset, :teacher_group_subject_assignments, tgsa_changesets)
+    end
   end
 end
