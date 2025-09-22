@@ -115,14 +115,14 @@ defmodule ScheduleWeb.Components.Typeahead do
     ~H"""
     <div class="relative">
       <%= if @selected_item do %>
-        <div class="flex items-center justify-between w-full border-gray-300 rounded-md shadow-sm bg-gray-100 px-3 py-2">
-          <span class="text-gray-800">{@selected_item.name}</span>
+        <div class="flex items-center justify-between w-full border border-gray-300 rounded-md bg-white px-3 py-2 shadow-sm">
+          <span class="text-gray-700">{@selected_item.name}</span>
           <button
             type="button"
             phx-click="clear"
             phx-target={@myself}
-            class="text-gray-500 hover:text-gray-700"
-            aria-label="Limpiar selección"
+            class="ml-2 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-light transition-colors"
+            aria-label="Limpiar selección de asignatura"
           >
             <.icon name="x-mark" class="w-4 h-4" />
           </button>
@@ -133,7 +133,7 @@ defmodule ScheduleWeb.Components.Typeahead do
           />
         </div>
       <% else %>
-        <div class="space-y-2">
+        <div>
           <.input
             field={@form[field_name]}
             type="text"
@@ -144,25 +144,26 @@ defmodule ScheduleWeb.Components.Typeahead do
             phx-debounce="300"
             value={@value}
             autocomplete="off"
+            class="w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary transition outline-primary"
           />
 
           <ul
             :if={not Enum.empty?(@items)}
-            class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto"
+            class="absolute z-10 w-full bg-white text-gray-700 border border-gray-200 rounded-md shadow-lg mt-2 max-h-60 overflow-y-auto transition-opacity duration-200 ease-in-out"
           >
             <li
               :for={item <- @items}
               tabindex="0"
-              class="px-3 py-2 border-b last:border-none cursor-pointer hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+              class="px-4 py-2.5 cursor-pointer focus:outline-none hover:bg-primary hover:text-white transition-colors duration-150"
               phx-click="select"
               phx-value-id={item.id}
               phx-target={@myself}
             >
-              {item.name}
+              <span>{item.name}</span>
             </li>
           </ul>
 
-          <div :if={@value && Enum.empty?(@items)} class="text-sm text-gray-500 px-3 py-2">
+          <div :if={@value && Enum.empty?(@items)} class="text-sm text-gray-500 px-4 py-2.5 mt-2">
             {gettext("No results")}
           </div>
         </div>
