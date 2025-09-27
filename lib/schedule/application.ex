@@ -14,7 +14,7 @@ defmodule Schedule.Application do
       {Phoenix.PubSub, name: Schedule.PubSub},
       # Start a worker by calling: Schedule.Worker.start_link(arg)
       # {Schedule.Worker, arg},
-      # Start to serve requests, typically the last entry
+      TwMerge.Cache,
       ScheduleWeb.Endpoint
     ]
 

@@ -12,12 +12,15 @@ defmodule Schedule.Repo.Schema.TeacherGroupSubjectAssignment do
     belongs_to :group, Group
     belongs_to :subject, Subject
 
+    # Campo virtual para el formulario
+    field :group_ids, {:array, :any}, virtual: true, default: []
+
     timestamps()
   end
 
   def changeset(assign, attrs) do
     assign
-    |> cast(attrs, [:teacher_id, :group_id, :subject_id])
+    |> cast(attrs, [:teacher_id, :group_id, :subject_id, :is_tutor])
     |> validate_required([:teacher_id, :group_id, :subject_id])
   end
 end

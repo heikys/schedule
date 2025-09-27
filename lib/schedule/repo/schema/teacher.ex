@@ -32,14 +32,13 @@ defmodule Schedule.Repo.Schema.Teacher do
         changeset
 
       assignments ->
-        # Transformamos la estructura del formulario en los changesets que Ecto espera
         tgsa_changesets =
           for %{"subject_id" => subject_id, "group_ids" => group_ids} <- assignments,
               subject_id != "" and not is_nil(subject_id),
               group_id <- group_ids do
             %TeacherGroupSubjectAssignment{
-              subject_id: subject_id,
-              group_id: group_id
+              subject_id: maybe_parse_int(subject_id),
+              group_id: maybe_parse_int(group_id)
             }
           end
 
@@ -47,4 +46,9 @@ defmodule Schedule.Repo.Schema.Teacher do
         put_assoc(changeset, :teacher_group_subject_assignments, tgsa_changesets)
     end
   end
+
+  defp maybe_parse_int(""), do: nil
+  defp maybe_parse_int(nil), do: nil
+  defp maybe_parse_int(value) when is_integer(value), do: value
+  defp maybe_parse_int(value) when is_binary(value), do: String.to_integer(value)
 end

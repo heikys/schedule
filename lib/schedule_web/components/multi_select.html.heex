@@ -1,0 +1,176 @@
+<div class="space-y-4 mt-2 relative">
+  
+<!-- Selection Button -->
+  <div class="flex items-center">
+    <.alert_dialog :let={builder} id={"#{@id}-dialog"}>
+      <.alert_dialog_trigger builder={builder}>
+        <.button
+          :if={not @read_only}
+          type="button"
+          variant="primary"
+          class="flex items-center gap-2"
+        >
+          <.icon name="plus" class="h-4 w-4" />
+          {@button_text}
+        </.button>
+      </.alert_dialog_trigger>
+
+      <.alert_dialog_content
+        builder={builder}
+        class="bg-white w-1/2 flex flex-col"
+      >
+        <.alert_dialog_header class="flex-shrink-0">
+          <.alert_dialog_title>{@title}</.alert_dialog_title>
+          <.alert_dialog_description>
+            {@description}
+          </.alert_dialog_description>
+        </.alert_dialog_header>
+
+        <div class="py-4 flex flex-col h-full">
+          <!-- Search Input -->
+          <div class="mb-4 flex-shrink-0 relative">
+            <.icon
+              name="magnifying-glass"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+            />
+            <.input
+              type="text"
+              id={"#{@id}-search"}
+              value={@search_query}
+              name={nil}
+              placeholder={@search_placeholder}
+              phx-keyup="search"
+              phx-target={@myself}
+              phx-debounce="300"
+              class="w-full pl-10"
+            />
+          </div>
+          
+<!-- Options List with fixed height -->
+          <div class="flex-1 overflow-y-auto border rounded-lg bg-gray-50 min-h-0 max-h-80">
+            <div class="divide-y divide-gray-200">
+              <%= for option <- @filtered_options do %>
+                <div class="flex items-start space-x-3 p-4 hover:bg-white rounded transition-colors group">
+                  <input
+                    type="checkbox"
+                    id={"#{@id}-option-#{option.id}"}
+                    checked={option.id in @selected_items}
+                    phx-update="ignore"
+                    phx-click="toggle_item"
+                    phx-value-item-id={option.id}
+                    phx-target={@myself}
+                    class="mt-1 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2 focus:ring-offset-1"
+                  />
+                  <label for={"#{@id}-option-#{option.id}"} class="flex-1 cursor-pointer">
+                    <div class="flex flex-col space-y-1">
+                      <span class="text-sm text-gray-700 group-hover:text-primary transition-colors">
+                        {option.name}
+                      </span>
+                      <%= if Map.get(option, :description) do %>
+                        <span class="text-xs text-gray-500 leading-relaxed">
+                          {option.description}
+                        </span>
+                      <% end %>
+                    </div>
+                  </label>
+                </div>
+              <% end %>
+              
+<!-- No results message -->
+              <div :if={length(@filtered_options) == 0} class="p-6 text-center text-gray-500">
+                <.icon name="magnifying-glass" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p class="text-sm">No se encontraron resultados</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <.alert_dialog_footer class="flex-shrink-0">
+          <.alert_dialog_action
+            type="button"
+            class="text-white"
+            phx-click={
+              JS.push("apply_selection", target: @myself)
+              |> hide_alert_dialog(builder)
+            }
+          >
+            Aplicar selección
+          </.alert_dialog_action>
+        </.alert_dialog_footer>
+      </.alert_dialog_content>
+    </.alert_dialog>
+  </div>
+  
+<!-- Selected Items Display -->
+  <div
+    :if={length(@selected_items) > 0}
+    class="border rounded-lg p-4 border-primary"
+  >
+    <div class="flex items-center mb-3">
+      <.icon name="archive-box" class="h-4 w-4 text-primary mr-2" />
+      <h4 class="text-sm font-medium text-gray-700">
+        Elementos seleccionados ({length(@selected_items)}):
+      </h4>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= for item_id <- @selected_items do %>
+        <% item = Enum.find(@options, &(to_string(&1.id) == item_id)) %>
+        <div
+          :if={item}
+          class="group relative inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-primary border border-primary transition-colors"
+          title={Map.get(item, :description, item.name)}
+        >
+          <.icon name="check" class="h-3 w-3 mr-1.5 flex-shrink-0" />
+          <span class="truncate max-w-32">{item.name}</span>
+          
+<!-- Tooltip for description -->
+          <%= if Map.get(item, :description) do %>
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 max-w-64 text-center">
+              <div class="font-medium">{item.name}</div>
+              <div class="text-gray-300 mt-1">{item.description}</div>
+              <!-- Arrow -->
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900">
+              </div>
+            </div>
+          <% end %>
+
+          <button
+            :if={not @read_only}
+            type="button"
+            class="ml-2 text-primary hover:bg-primary hover:text-white rounded-full p-0.5 transition-colors flex-shrink-0"
+            phx-click="remove_item"
+            phx-value-item-id={item.id}
+            phx-target={@myself}
+            title={"Borrar #{item.name}"}
+          >
+            <.icon name="x-mark" class="h-3 w-3" />
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+<!-- Empty State -->
+  <div
+    :if={length(@selected_items) == 0}
+    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50"
+  >
+    <.icon name="archive-box" class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+    <p class="text-sm text-gray-500">
+      {@empty_state_title}
+    </p>
+    <p class="text-xs text-gray-400 mt-1">
+      {@empty_state_description}
+    </p>
+  </div>
+  
+<!-- Hidden Inputs for Form Submission -->
+  <%= if length(@selected_items) > 0 do %>
+    <%= for item_id <- @selected_items do %>
+      <input type="hidden" name={"#{@field_name}[]"} value={item_id} />
+    <% end %>
+  <% else %>
+    <!-- Empty input to ensure the field is submitted as empty when no items are selected -->
+    <input type="hidden" name={@field_name} value="" />
+  <% end %>
+</div>
