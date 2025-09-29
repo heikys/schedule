@@ -62,6 +62,12 @@ defmodule ScheduleWeb.TeacherFormLive do
         %{"teacher" => teacher_params},
         socket
       ) do
+    teacher_params =
+      case teacher_params["assignments"] do
+        nil -> nil
+        assignments -> Map.put(teacher_params, "assignments", Map.values(assignments))
+      end
+
     # validate(teacher_params, socket)
 
     changeset = Teacher.changeset(%Teacher{}, teacher_params)
@@ -99,7 +105,7 @@ defmodule ScheduleWeb.TeacherFormLive do
     # La forma correcta de añadir un input dinámico es actualizar el changeset
     # y volver a generar el formulario con `to_form`.
     existing_assignments = Ecto.Changeset.get_field(socket.assigns.form.source, :assignments)
-    new_assignments = (existing_assignments || []) ++ [%{}]
+    new_assignments = (existing_assignments || []) ++ [%TeacherGroupSubjectAssignment{}]
 
     new_changeset =
       Ecto.Changeset.put_change(socket.assigns.form.source, :assignments, new_assignments)

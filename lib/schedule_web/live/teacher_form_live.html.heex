@@ -35,14 +35,16 @@
           Asignaturas que imparte (sin contar las asignaturas de las que es tutor)
         </label>
         <div class="space-y-4">
-          <% index = 0 %>
-          <%= for assignment_form <- Ecto.Changeset.get_field(@form.source, :assignments) do %>
+          <% assignments = Ecto.Changeset.get_field(@form.source, :assignments) %>
+
+          <%= for index <- 0..(length(assignments) - 1) do %>
+            <% assignment_form = Enum.at(assignments, index) || %{} %>
             <% assignment_id = "assignment_#{index}" %>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               <div class="max-w-sm">
                 <.live_component
                   module={ScheduleWeb.Components.Typeahead}
-                  field_name="teacher[assignments][][subject_id]"
+                  field_name={"teacher[assignments][#{index}][subject_id]"}
                   id={assignment_id}
                   form={@assignment_form}
                   on_click={{:click_subject, assignment_id}}
@@ -52,7 +54,10 @@
                 />
               </div>
 
-              <div :if={assignment_form.subject_id} class="max-w-sm">
+              <div
+                :if={Map.has_key?(assignment_form, :subject_id) && assignment_form.subject_id}
+                class="max-w-sm"
+              >
                 <.live_component
                   module={ScheduleWeb.Components.MultiSelect}
                   id={"groups-for-#{assignment_id}"}
@@ -65,13 +70,11 @@
                   options={group_options(@all_courses_with_groups)}
                   selected_items={assignment_form.group_ids || []}
                   on_apply={{:groups_selected, assignment_id}}
-                  field_name="teacher[assignments][][group_ids]"
+                  field_name={"teacher[assignments][#{index}][group_ids]"}
                 />
               </div>
-              <% index = index + 1 %>
             </div>
           <% end %>
-
           <button
             type="button"
             phx-click="add-assignment"
