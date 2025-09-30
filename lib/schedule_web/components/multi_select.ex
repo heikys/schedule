@@ -12,7 +12,7 @@ defmodule ScheduleWeb.Components.MultiSelect do
   ## Usage
 
       <.live_component
-        module={RiderAdminWeb.Components.MultiSelect}
+        module={ScheduleWeb.Components.MultiSelect}
         id="product-selector"
         options={@product_options}
         selected_items={get_selected_products(@form)}
