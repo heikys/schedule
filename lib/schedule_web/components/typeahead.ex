@@ -115,7 +115,7 @@ defmodule ScheduleWeb.Components.Typeahead do
           </button>
           <input
             type="hidden"
-            name={Phoenix.HTML.Form.input_name(@form, field_name)}
+            name={field_name}
             value={@selected_item.id}
           />
         </div>

@@ -27,8 +27,8 @@ defmodule ScheduleWeb.TeacherFormLive do
      )}
   end
 
-  @impl true
-  def handle_event("validate", %{"teacher" => teacher_params}, socket) do
+  # def handle_event("validate", %{"teacher" => teacher_params}, socket) do
+  def validate(teacher_params, socket) do
     # Remove empty assignments that can be sent by the form
 
     teacher_params =
@@ -57,16 +57,20 @@ defmodule ScheduleWeb.TeacherFormLive do
   end
 
   @impl true
-  def handle_event("add_teacher", %{"teacher" => teacher_params}, socket) do
-    # Remove empty assignments that can be sent by the form
+  def handle_event(
+        "add_teacher",
+        %{"teacher" => teacher_params},
+        socket
+      ) do
     teacher_params =
-      update_in(teacher_params["assignments"], fn assignments ->
-        Enum.reject(assignments, &(&1["subject_id"] == ""))
-      end)
+      case teacher_params["assignments"] do
+        nil -> nil
+        assignments -> Map.put(teacher_params, "assignments", Map.values(assignments))
+      end
 
-    changeset =
-      %Teacher{}
-      |> Teacher.changeset(teacher_params)
+    # validate(teacher_params, socket)
+
+    changeset = Teacher.changeset(%Teacher{}, teacher_params)
 
     case Repo.insert(changeset) do
       {:ok, _teacher} ->
@@ -101,7 +105,7 @@ defmodule ScheduleWeb.TeacherFormLive do
     # La forma correcta de añadir un input dinámico es actualizar el changeset
     # y volver a generar el formulario con `to_form`.
     existing_assignments = Ecto.Changeset.get_field(socket.assigns.form.source, :assignments)
-    new_assignments = (existing_assignments || []) ++ [%{}]
+    new_assignments = (existing_assignments || []) ++ [%TeacherGroupSubjectAssignment{}]
 
     new_changeset =
       Ecto.Changeset.put_change(socket.assigns.form.source, :assignments, new_assignments)
@@ -152,17 +156,40 @@ defmodule ScheduleWeb.TeacherFormLive do
       |> String.to_integer()
 
     form_source = socket.assigns.form.source
+    assignments = Ecto.Changeset.get_field(form_source, :assignments)
+    # Usamos Map.get para manejar tanto structs como maps
+    assignment = Enum.at(assignments, index) |> Map.put(:subject_id, subject_id)
 
-    new_assignments =
-      Ecto.Changeset.get_field(form_source, :assignments)
-      |> List.replace_at(index, %{subject_id: subject_id})
+    new_assignments = List.replace_at(assignments, index, assignment)
 
     new_changeset = Ecto.Changeset.put_change(form_source, :assignments, new_assignments)
     socket = assign(socket, form: to_form(new_changeset))
     {:noreply, socket}
   end
 
-  defp list_teachers, do: Repo.all(Teacher) |> Repo.preload(:subjects)
+  @impl true
+  def handle_info({:groups_selected, assignment_id, group_ids}, socket) do
+    index =
+      assignment_id
+      |> String.split("_")
+      |> List.last()
+      |> String.to_integer()
+
+    form_source = socket.assigns.form.source
+    assignments = Ecto.Changeset.get_field(form_source, :assignments)
+    assignment = Enum.at(assignments, index) |> Map.put(:group_ids, group_ids)
+
+    new_assignments = List.replace_at(assignments, index, assignment)
+
+    new_changeset = Ecto.Changeset.put_change(form_source, :assignments, new_assignments)
+    socket = assign(socket, form: to_form(new_changeset))
+    {:noreply, socket}
+  end
+
+  defp list_teachers do
+    Repo.all(Teacher)
+    |> Repo.preload(teacher_group_subject_assignments: [subject: [], group: [:course]])
+  end
 
   defp list_subjects do
     Enum.map(Repo.all(Subject), fn %{id: id, name: name} -> %{id: id, name: name} end)
@@ -170,4 +197,10 @@ defmodule ScheduleWeb.TeacherFormLive do
 
   defp list_courses_with_groups,
     do: Repo.all(from c in Course, order_by: c.name, preload: [:groups])
+
+  defp group_options(courses_with_groups) do
+    for course <- courses_with_groups, group <- course.groups do
+      %{id: group.id, name: "#{course.name} - #{group.name}"}
+    end
+  end
 end

@@ -17,7 +17,7 @@
   <section class="bg-white p-6 rounded-lg shadow-md mb-8">
     <h2 class="text-xl font-semibold mb-6 border-b pb-4">Añadir nuevo profesor</h2>
 
-    <.form for={@form} phx-submit="add_teacher" phx-change="validate" class="space-y-6">
+    <.form for={@form} phx-submit="add_teacher" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -35,24 +35,46 @@
           Asignaturas que imparte (sin contar las asignaturas de las que es tutor)
         </label>
         <div class="space-y-4">
-          <% index = 0 %>
-          <%= for assignment_form <- Ecto.Changeset.get_field(@form.source, :assignments) do %>
-            <div class="max-w-sm">
-              <% assignment_id = "assignment_" <> to_string(index) %>
-              <.live_component
-                module={ScheduleWeb.Components.Typeahead}
-                field_name="subject_id"
-                id={assignment_id}
-                form={@assignment_form}
-                on_click={{:click_subject, assignment_id}}
-                on_search={{:search_subject, assignment_id}}
-                on_select={{:subject_selected, assignment_id}}
-                placeholder="Empieza a escribir para buscar..."
-              />
-              <% index = index + 1 %>
+          <% assignments = Ecto.Changeset.get_field(@form.source, :assignments) %>
+
+          <%= for index <- 0..(length(assignments) - 1) do %>
+            <% assignment_form = Enum.at(assignments, index) || %{} %>
+            <% assignment_id = "assignment_#{index}" %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div class="max-w-sm">
+                <.live_component
+                  module={ScheduleWeb.Components.Typeahead}
+                  field_name={"teacher[assignments][#{index}][subject_id]"}
+                  id={assignment_id}
+                  form={@assignment_form}
+                  on_click={{:click_subject, assignment_id}}
+                  on_search={{:search_subject, assignment_id}}
+                  on_select={{:subject_selected, assignment_id}}
+                  placeholder="Buscar asignatura..."
+                />
+              </div>
+
+              <div
+                :if={Map.has_key?(assignment_form, :subject_id) && assignment_form.subject_id}
+                class="max-w-sm"
+              >
+                <.live_component
+                  module={ScheduleWeb.Components.MultiSelect}
+                  id={"groups-for-#{assignment_id}"}
+                  title="Seleccionar grupos"
+                  description="Elige los grupos a los que se imparte esta asignatura."
+                  button_text="Asignar grupos"
+                  search_placeholder="Buscar grupo..."
+                  empty_state_title="No hay grupos asignados"
+                  empty_state_description="Haz clic en el botón para asignar uno o más grupos."
+                  options={group_options(@all_courses_with_groups)}
+                  selected_items={assignment_form.group_ids || []}
+                  on_apply={{:groups_selected, assignment_id}}
+                  field_name={"teacher[assignments][#{index}][group_ids]"}
+                />
+              </div>
             </div>
           <% end %>
-
           <button
             type="button"
             phx-click="add-assignment"
@@ -67,7 +89,6 @@
       <div class="pt-4 border-t">
         <.button
           type="submit"
-          disabled={!@valid_form?}
           class="inline-flex items-center px-6 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           Guardar Profesor
@@ -103,7 +124,17 @@
                   {teacher.name}
                 </th>
                 <td class="px-6 py-4">
-                  {Enum.map_join(teacher.subjects, ", ", & &1.name)}
+                  <% tgsa_map =
+                    Enum.group_by(teacher.teacher_group_subject_assignments, & &1.subject.id) %>
+
+                  <%= Enum.map(tgsa_map, fn {_,tgsas} -> %>
+                    {hd(tgsas).subject.name}: {Enum.map_join(
+                      tgsas,
+                      ", ",
+                      &(&1.group.course.name <> " - " <> &1.group.name)
+                    )}
+                    <br />
+                  <% end) %>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <.button

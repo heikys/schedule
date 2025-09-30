@@ -63,6 +63,7 @@ defmodule Schedule.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:req, "~> 0.5"},
+      {:salad_ui, "~> 0.14.9"},
       {:swoosh, "~> 1.16"},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
