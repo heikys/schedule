@@ -2,32 +2,41 @@ defmodule Schedule.Repo.Migrations.AddTables do
   use Ecto.Migration
 
   def change do
-    # Cursos
     create table(:courses) do
       add :name, :string, null: false
-      add :days, :integer, null: false, default: 5
-      add :slots_per_day, :integer, null: false, default: 5
       timestamps()
     end
 
-    # Grupos
     create table(:groups) do
       add :course_id, references(:courses, on_delete: :delete_all), null: false
       add :name, :string, null: false
       timestamps()
     end
 
-    # Profesores
     create table(:teachers) do
       add :name, :string, null: false
       timestamps()
     end
 
-    # Asignaturas
     create table(:subjects) do
       add :code, :string
       add :name, :string, null: false
       add :is_core, :boolean, default: false
+      timestamps()
+    end
+
+    create table(:school_configs) do
+      add :days, :integer, null: false, default: 5
+      add :slots_per_day, :integer, null: false, default: 5
+      timestamps()
+    end
+
+    create table(:time_slots) do
+      add :start_time, :time
+      add :end_time, :time
+      add :order, :integer, null: false
+
+      add :school_config_id, references(:school_configs, on_delete: :delete_all), null: false
       timestamps()
     end
 
@@ -59,15 +68,6 @@ defmodule Schedule.Repo.Migrations.AddTables do
     create table(:subject_classroom_requirements) do
       add :subject_id, references(:subjects, on_delete: :delete_all), null: false
       add :classroom_type, :string, null: false
-      timestamps()
-    end
-
-    # Franjas horarias
-    create table(:time_slots) do
-      add :day_of_week, :integer, null: false
-      add :slot_number, :integer, null: false
-      add :start_time, :time
-      add :end_time, :time
       timestamps()
     end
 

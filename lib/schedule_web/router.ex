@@ -19,6 +19,7 @@ defmodule ScheduleWeb.Router do
 
     live "/", HomeLive, :index
     live "/courses/new", CourseFormLive
+    live "/school_config/new", SchoolConfigLive
     live "/subjects/new", SubjectFormLive
     live "/teachers/new", TeacherFormLive
   end

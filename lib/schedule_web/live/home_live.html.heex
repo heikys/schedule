@@ -6,14 +6,21 @@
     <p class="text-gray-500 mb-8">
       Comienza por añadir tu primer curso para crear el horario.
     </p>
-    <div class="flex flex-col sm:flex-row justify-center gap-4">
+    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+      <.link
+        navigate={~p"/school_config/new"}
+        class="inline-flex items-center px-8 py-4 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary-dark transition-all duration-300 ease-in-out transform hover:scale-105"
+      >
+        <.icon name="cog-8-tooth" class="w-6 h-6 mr-2" /> Añadir configuración general
+      </.link>
       <.link
         navigate={~p"/courses/new"}
         class="inline-flex items-center px-8 py-4 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary-dark transition-all duration-300 ease-in-out transform hover:scale-105"
       >
         <.icon name="plus-circle" class="w-6 h-6 mr-2" /> Añadir cursos
       </.link>
-
+    </div>
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
       <.link
         navigate={~p"/subjects/new"}
         class="inline-flex items-center px-8 py-4 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-secondary-dark transition-all duration-300 ease-in-out transform hover:scale-105"

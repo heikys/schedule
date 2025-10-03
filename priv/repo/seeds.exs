@@ -50,15 +50,15 @@ IO.puts("✅ Created #{length(subjects)} subjects.")
 # Create courses and their groups
 courses_with_groups = [
   %{
-    course: %{name: "1º ESO", days: 5, slots_per_day: 6},
+    course: %{name: "1º ESO"},
     groups: [%{name: "A"}, %{name: "B"}, %{name: "C"}]
   },
-  %{course: %{name: "2º ESO", days: 5, slots_per_day: 6}, groups: [%{name: "A"}, %{name: "B"}]},
+  %{course: %{name: "2º ESO"}, groups: [%{name: "A"}, %{name: "B"}]},
   %{
-    course: %{name: "3º ESO", days: 5, slots_per_day: 6},
+    course: %{name: "3º ESO"},
     groups: [%{name: "A"}, %{name: "B"}, %{name: "C"}, %{name: "D"}]
   },
-  %{course: %{name: "4º ESO", days: 5, slots_per_day: 6}, groups: [%{name: "A"}, %{name: "B"}]}
+  %{course: %{name: "4º ESO"}, groups: [%{name: "A"}, %{name: "B"}]}
 ]
 
 Enum.each(courses_with_groups, fn %{course: course_attrs, groups: groups_attrs} ->

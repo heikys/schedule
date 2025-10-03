@@ -7,10 +7,7 @@ defmodule Schedule.Repo.Schema.Course do
 
   schema "courses" do
     field :name, :string
-    # número de días lectivos
-    field :days, :integer
-    # número de franjas por día
-    field :slots_per_day, :integer
+
     has_many :groups, Group
 
     timestamps()
@@ -18,8 +15,8 @@ defmodule Schedule.Repo.Schema.Course do
 
   def changeset(course, attrs) do
     course
-    |> cast(attrs, [:name, :days, :slots_per_day])
+    |> cast(attrs, [:name])
     |> cast_assoc(:groups, with: &Group.changeset/2)
-    |> validate_required([:name, :days, :slots_per_day])
+    |> validate_required([:name])
   end
 end

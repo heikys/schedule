@@ -1,0 +1,92 @@
+<div class="min-h-screen bg-gray-50 p-8">
+  <!-- Header -->
+  <div class="mb-4">
+    <.link
+      navigate={~p"/"}
+      class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+    >
+      <.icon name="arrow-left" class="w-5 h-5 mr-2" /> Volver
+    </.link>
+  </div>
+  <header class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Configuración general</h1>
+    <p class="text-gray-600 mt-1">Gestiona la configuración de tu colegio.</p>
+  </header>
+  
+<!-- Formulario de añadir curso -->
+  <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <.form
+      for={@form}
+      phx-change="validate"
+      phx-submit="save"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6"
+    >
+      <!-- Columna Izquierda: Detalles de la configuración -->
+      <div class="space-y-6">
+        <div class="w-full lg:w-1/2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Días lectivos</label>
+          <.input
+            field={@form[:days]}
+            type="number"
+            placeholder="Ej: 5"
+            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+          />
+        </div>
+        <div class="w-full lg:w-1/2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Franjas horarias por día
+          </label>
+          <.input
+            field={@form[:slots_per_day]}
+            type="number"
+            placeholder="Ej: 6"
+            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+          />
+        </div>
+      </div>
+      
+<!-- Columna Derecha: Franjas Horarias -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-gray-800">Franjas Horarias</h3>
+        <p class="text-sm text-gray-500 mb-3">
+          Define las franjas horarias para un día lectivo.
+        </p>
+        <.inputs_for :let={time_slot_form} field={@form[:time_slots]}>
+          <input
+            type="hidden"
+            name={time_slot_form[:order].name}
+            value={time_slot_form[:order].value}
+          />
+          <div class="flex items-center gap-4">
+            <div class="grow">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Inicio</label>
+              <.input
+                type="time"
+                field={time_slot_form[:start_time]}
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+              />
+            </div>
+            <div class="grow">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+              <.input
+                type="time"
+                field={time_slot_form[:end_time]}
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+              />
+            </div>
+          </div>
+        </.inputs_for>
+      </div>
+
+      <div class="lg:col-span-2 pt-4 border-t">
+        <.button
+          type="submit"
+          phx-disable-with="Guardando..."
+          class="inline-flex items-center px-6 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          Guardar
+        </.button>
+      </div>
+    </.form>
+  </section>
+</div>
