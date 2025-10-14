@@ -24,6 +24,7 @@ defmodule ScheduleWeb.SchoolConfigLive do
       socket
       |> assign(:school_config, school_config)
       |> assign(:form, to_form(changeset))
+      |> assign(:page_title, "Configuración del centro")
       |> adjust_time_slots(school_config.slots_per_day)
 
     {:ok, socket}

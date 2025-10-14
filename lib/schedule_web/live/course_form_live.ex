@@ -12,7 +12,8 @@ defmodule ScheduleWeb.CourseFormLive do
        courses: list_courses(),
        form: new_course_form(),
        step: 1,
-       valid_form?: false
+       valid_form?: false,
+       page_title: "Cursos"
      )}
   end
 

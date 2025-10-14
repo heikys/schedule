@@ -23,7 +23,8 @@ defmodule ScheduleWeb.TeacherFormLive do
          ),
        assignment_form:
          to_form(TeacherGroupSubjectAssignment.changeset(%TeacherGroupSubjectAssignment{}, %{})),
-       valid_form?: false
+       valid_form?: false,
+       page_title: "Profesores"
      )}
   end
 
@@ -57,14 +58,10 @@ defmodule ScheduleWeb.TeacherFormLive do
   end
 
   @impl true
-  def handle_event(
-        "add_teacher",
-        %{"teacher" => teacher_params},
-        socket
-      ) do
+  def handle_event("add_teacher", %{"teacher" => teacher_params}, socket) do
     teacher_params =
       case teacher_params["assignments"] do
-        nil -> nil
+        nil -> teacher_params
         assignments -> Map.put(teacher_params, "assignments", Map.values(assignments))
       end
 

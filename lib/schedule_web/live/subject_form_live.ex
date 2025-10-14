@@ -10,7 +10,8 @@ defmodule ScheduleWeb.SubjectFormLive do
      assign(socket,
        subjects: list_subjects(),
        form: to_form(Subject.changeset(%Subject{}, %{})),
-       valid_form?: false
+       valid_form?: false,
+       page_title: "Asignaturas"
      )}
   end
 

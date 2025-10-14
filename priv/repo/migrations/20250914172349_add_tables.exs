@@ -15,6 +15,9 @@ defmodule Schedule.Repo.Migrations.AddTables do
 
     create table(:teachers) do
       add :name, :string, null: false
+      add :has_special_schedule, :boolean, default: false
+      add :special_schedule_start_time, :time
+      add :special_schedule_end_time, :time
       timestamps()
     end
 

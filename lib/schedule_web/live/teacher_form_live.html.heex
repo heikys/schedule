@@ -84,6 +84,52 @@
           </button>
         </div>
       </div>
+      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label for={@form[:has_special_schedule].id} class="flex items-center cursor-pointer">
+          <input
+            type="hidden"
+            name={@form[:has_special_schedule].name}
+            value="false"
+            id={"#{@form[:has_special_schedule].id}_hidden"}
+          />
+          <div class="relative">
+            <input
+              type="checkbox"
+              id={@form[:has_special_schedule].id}
+              name={@form[:has_special_schedule].name}
+              checked={@form[:has_special_schedule].value}
+              value="true"
+              class="sr-only peer"
+            />
+            <div class="block bg-gray-200 w-14 h-8 rounded-full transition peer-checked:bg-primary">
+            </div>
+            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform transform peer-checked:translate-x-full">
+            </div>
+          </div>
+          <div class="ml-3 text-gray-700 text-sm font-medium">
+            ¿Tiene un horario especial, diferente al del centro?
+          </div>
+        </label>
+
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex gap-3">
+            <label class="text-sm font-medium text-gray-700">Inicio</label>
+            <.input
+              type="time"
+              field={@form[:special_schedule_start_time]}
+              class="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+            />
+          </div>
+          <div class="flex gap-3">
+            <label class="text-sm font-medium text-gray-700">Fin</label>
+            <.input
+              type="time"
+              field={@form[:special_schedule_end_time]}
+              class="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition outline-primary"
+            />
+          </div>
+        </div>
+      </div>
       
 <!-- Botón final -->
       <div class="pt-4 border-t">
