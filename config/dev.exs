@@ -25,8 +25,8 @@ config :schedule, ScheduleWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "zsJOC15j01TLrP5BibiEdOpd999A1RxvsRW6Au0hsXMQEk3V+S4I1Gs85L693Mlo",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:schedule, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:schedule, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -86,3 +86,6 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# Path to install SaladUI components
+config :salad_ui, components_path: Path.join(File.cwd!(), "lib/schedule_web/components")

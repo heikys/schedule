@@ -47,12 +47,14 @@ defmodule Schedule.Repo.Schema.Teacher do
 
       assignments ->
         tgsa_changesets =
-          for %{"subject_id" => subject_id, "group_ids" => group_ids} <- assignments,
+          for %{"subject_id" => subject_id, "group_ids" => group_ids, "hours_per_week" => hours} <-
+                assignments,
               subject_id != "" and not is_nil(subject_id),
               group_id <- group_ids do
             %TeacherGroupSubjectAssignment{
               subject_id: maybe_parse_int(subject_id),
-              group_id: maybe_parse_int(group_id)
+              group_id: maybe_parse_int(group_id),
+              hours_per_week: maybe_parse_int(hours)
             }
           end
 

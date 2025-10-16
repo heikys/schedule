@@ -8,6 +8,7 @@ defmodule Schedule.Repo.Schema.TeacherGroupSubjectAssignment do
 
   schema "teacher_group_subject_assignment" do
     field :is_tutor, :boolean, default: false
+    field :hours_per_week, :integer
     belongs_to :teacher, Teacher
     belongs_to :group, Group
     belongs_to :subject, Subject
@@ -20,7 +21,7 @@ defmodule Schedule.Repo.Schema.TeacherGroupSubjectAssignment do
 
   def changeset(assign, attrs) do
     assign
-    |> cast(attrs, [:teacher_id, :group_id, :subject_id, :is_tutor])
-    |> validate_required([:teacher_id, :group_id, :subject_id])
+    |> cast(attrs, [:teacher_id, :group_id, :subject_id, :is_tutor, :hours_per_week])
+    |> validate_required([:teacher_id, :group_id, :subject_id, :hours_per_week])
   end
 end

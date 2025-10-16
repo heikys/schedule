@@ -43,13 +43,13 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "4.1.7",
-  schedule: [
+  version: "4.1.13",
+  default: [
     args: ~w(
-      --input=assets/css/app.css
-      --output=priv/static/assets/css/app.css
+      -i=css/app.css
+      --output=../priv/static/assets/css/app.css
     ),
-    cd: Path.expand("..", __DIR__)
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Configures Elixir's Logger

@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
-@theme static {
+@source "../js";
+@source "../../lib/schedule_web";
+
+/* This file is for your main application CSS. */
+
+@theme {
   --color-primary: #08afaf;
   --color-secondary: #D7BF35;
+  /* ... */
 }
+
+/* Add your custom CSS below */

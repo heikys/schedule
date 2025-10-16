@@ -20,21 +20,21 @@ defmodule Schedule.Generator do
     # 2. Prepare the data structures for the solver
     lessons_to_schedule = prepare_lessons(assignments)
     slots = prepare_slots(config, groups)
+    high_frequency_subjects = high_frequency_subjects(assignments, config.days)
 
     initial_state = %{
       # The final schedule, group_id -> %{{day, slot_order} -> %{subject, teacher}}
       schedule: Enum.into(groups, %{}, &{&1.id, %{}}),
       # Keep track of teacher's availability: {teacher_id, day, slot_order}
-      teacher_bookings: MapSet.new()
+      teacher_bookings: MapSet.new(),
+      daily_subject_bookings: MapSet.new(),
+      high_frequency_subjects: high_frequency_subjects
     }
 
     # 3. Run the backtracking solver
     case solve(lessons_to_schedule, slots, initial_state) do
-      {:ok, final_state} ->
-        {:ok, final_state.schedule}
-
-      :error ->
-        {:error, "Could not find a valid schedule."}
+      {:ok, final_state} -> {:ok, final_state.schedule}
+      :error -> {:error, "Could not find a valid schedule."}
     end
   end
 
@@ -61,7 +61,6 @@ defmodule Schedule.Generator do
 
       case solve(rest_lessons, rest_slots, new_state) do
         {:ok, final_state} ->
-          # A solution was found down this path.
           {:ok, final_state}
 
         :error ->
@@ -79,18 +78,23 @@ defmodule Schedule.Generator do
     :error
   end
 
-  @doc """
-  Checks if a lesson can be placed in a given slot.
-  """
   defp can_place?(lesson, slot, state) do
     # A lesson can be placed if:
     # 1. The group for the lesson matches the slot's group.
-    # 2. The teacher is not already booked for that day and slot.
-    # (Here you would add more constraints, like teacher special availability)
+    # 2. The teacher is not already booked for that day and time slot.
+    # 3. The subject has not already been taught to that group on that day,
+    #    unless it's a high-frequency subject.
     teacher_booking = {lesson.teacher_id, slot.day, slot.order}
+    daily_subject_booking = {lesson.group_id, slot.day, lesson.subject_id}
+
+    is_high_frequency? =
+      MapSet.member?(state.high_frequency_subjects, {lesson.group_id, lesson.subject_id})
+
+    subject_already_on_day? = MapSet.member?(state.daily_subject_bookings, daily_subject_booking)
 
     lesson.group_id == slot.group_id &&
-      not MapSet.member?(state.teacher_bookings, teacher_booking)
+      not MapSet.member?(state.teacher_bookings, teacher_booking) &&
+      (is_high_frequency? || not subject_already_on_day?)
   end
 
   @doc """
@@ -100,6 +104,10 @@ defmodule Schedule.Generator do
     # Add the teacher booking to the set of bookings.
     teacher_booking = {lesson.teacher_id, slot.day, slot.order}
     new_teacher_bookings = MapSet.put(state.teacher_bookings, teacher_booking)
+
+    # Add the daily subject booking.
+    daily_subject_booking = {lesson.group_id, slot.day, lesson.subject_id}
+    new_daily_subject_bookings = MapSet.put(state.daily_subject_bookings, daily_subject_booking)
 
     # Add the lesson to the group's schedule.
     group_schedule = state.schedule[lesson.group_id]
@@ -113,7 +121,12 @@ defmodule Schedule.Generator do
 
     new_schedule = Map.put(state.schedule, lesson.group_id, new_group_schedule)
 
-    %{state | schedule: new_schedule, teacher_bookings: new_teacher_bookings}
+    %{
+      state
+      | schedule: new_schedule,
+        teacher_bookings: new_teacher_bookings,
+        daily_subject_bookings: new_daily_subject_bookings
+    }
   end
 
   @doc """
@@ -147,5 +160,12 @@ defmodule Schedule.Generator do
         order: order
       }
     end
+  end
+
+  defp high_frequency_subjects(assignments, config_days) do
+    assignments
+    |> Enum.filter(&(&1.hours_per_week > config_days))
+    |> Enum.map(&{&1.group_id, &1.subject_id})
+    |> MapSet.new()
   end
 end
